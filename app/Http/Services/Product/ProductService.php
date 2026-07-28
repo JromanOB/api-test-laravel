@@ -5,8 +5,9 @@ namespace App\Http\Services\Product;
 use \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductService
 {
@@ -15,6 +16,13 @@ class ProductService
         $query = Product::query()->orderBy('id', 'asc');
 
         return $query->paginate(Product::PAGINATE);
+    }
+
+    public function all(): Collection
+    {
+        return Product::query()
+            ->orderBy('id', 'asc')
+            ->get();
     }
 
     public function getById(int $id): Product|null

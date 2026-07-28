@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\ProductResource;
-use App\Http\Requests\CreateProductRequest;
-use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\Product\CreateProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Services\Product\ProductService;
+use App\Models\Product;
 
 class ProductController extends Controller
 {
@@ -22,6 +23,12 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
+    public function all()
+    {
+        $products = $this->productService->all();
+
+        return $products;
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -35,11 +42,11 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int $id): ProductResource|JsonResponse
+    public function show(int $id): Product|JsonResponse
     {
         $product = $this->productService->getById($id);
 
-        return new ProductResource($product);
+        return $product;
     }
 
     /**
