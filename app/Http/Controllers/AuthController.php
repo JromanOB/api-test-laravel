@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -22,6 +24,22 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
             'expires_in' => Auth::factory()->getTTL() * 60
         ]);
+    }
+
+    public function validateToken()
+    {
+        try {
+            JWTAuth::parseToken()->authenticate();
+
+            return response()->json([
+                'valid' => true
+            ], 200);
+
+        } catch (JWTException $exception) {
+            return response()->json([
+                'valid' => false
+            ], 401);
+        }
     }
 
     public function me()
