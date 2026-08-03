@@ -4,7 +4,6 @@ namespace App\Http\Services\User;
 
 use \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -16,6 +15,17 @@ class UserService
         $query = User::query()->orderBy('id', 'asc');
 
         return $query->paginate(User::PAGINATE);
+    }
+
+    public function findByUsername(string $username): User|null
+    {
+        $user = User::where('username', '=', $username)->first();
+
+        if (! $user) {
+            throw new NotFoundHttpException('User not found!');
+        }
+
+        return $user;
     }
 
     public function getById(int $id): User|null

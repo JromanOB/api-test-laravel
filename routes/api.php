@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LdapAuthController;
+
+Route::post('/ldap/login', [LdapAuthController::class, 'login']);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/auth/validate', [
