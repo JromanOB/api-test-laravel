@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::get('/auth/validate', [
     AuthController::class,
     'validateToken'
@@ -29,3 +30,5 @@ Route::post('/users/add-roles/{id}', [UserController::class, 'addRoles'])
     ->middleware('auth:api');
 Route::post('/users/remove-roles/{id}', [UserController::class, 'removeRoles'])
     ->middleware('auth:api');
+Route::put('/users/desactivate/{id}', [UserController::class, 'desactivate']);
+Route::put('/users/activate/{id}', [UserController::class, 'activate']);

@@ -53,6 +53,16 @@ class UserController extends Controller
     {
         return $this->userService->delete($id);
     }
+    
+    public function desactivate(int $id)
+    {
+        return $this->userService->desactivate($id);
+    }
+
+    public function activate(int $id)
+    {
+        return $this->userService->activate($id);
+    }
 
     public function addRoles(Request $request, int $id)
     {

@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Http\Services\User\UserService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -17,6 +19,7 @@ class AuthTest extends TestCase
             'username' => 'tester',
             'phonenumber' => '+50688888888',
             'email' => 'test@example.com',
+            'fullname' => 'Tester User',
             'password' => Hash::make('password123'),
         ]);
 
@@ -27,6 +30,24 @@ class AuthTest extends TestCase
 
         $response->assertStatus(401);
         $response->assertJsonPath('status', 'error');
+    }
+
+    public function test_find_by_username_rejects_inactive_user_as_http_error(): void
+    {
+        User::create([
+            'username' => 'inactive-user',
+            'phonenumber' => '+50688888888',
+            'email' => 'inactive@example.com',
+            'fullname' => 'Inactive User',
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
+
+        $service = app(UserService::class);
+
+        $this->expectException(HttpResponseException::class);
+
+        $service->findByUsername('inactive-user');
     }
 
     public function test_ldap_login_routes_are_available_for_both_endpoint_names(): void

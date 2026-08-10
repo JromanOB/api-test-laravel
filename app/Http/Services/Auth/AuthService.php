@@ -55,7 +55,7 @@ class AuthService
 
         $user = $this->userService->findByUsername($ldapUsername);
 
-        $token = JWTAuth::login($user);
+        $token = Auth::login($user);
 
         return response()->json([
             'access_token' => $token,

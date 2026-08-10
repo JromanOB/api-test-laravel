@@ -4,6 +4,7 @@ namespace App\Http\Services\User;
 
 use \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -17,12 +18,18 @@ class UserService
         return $query->paginate(User::PAGINATE);
     }
 
-    public function findByUsername(string $username): User|null
+    public function findByUsername(string $username): User
     {
         $user = User::where('username', '=', $username)->first();
 
         if (! $user) {
-            throw new NotFoundHttpException('User not found!');
+            throw new NotFoundHttpException('Usuario no encontrado!');
+        }
+
+        if ($user->is_active != true) {
+            throw new HttpResponseException(
+                response()->json(['message' => 'El usuario no esta activo.'], 403)
+            );
         }
 
         return $user;
@@ -33,7 +40,7 @@ class UserService
         $user = User::find($id);
 
         if (! $user) {
-            throw new NotFoundHttpException('User not found!');
+            throw new NotFoundHttpException('Usuario no encontrado!');
         }
 
         return $user;
@@ -90,7 +97,25 @@ class UserService
 
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully.'], 200);
+        return response()->json(['message' => 'Usuario eliminado exitosamente.'], 200);
+    }
+
+    public function desactivate(int $id): JsonResponse
+    {
+        $user = $this->getById($id);
+
+        $user->update(['is_active' => false]);
+
+        return response()->json(['message' => 'Usuario desactivado exitosamente.'], 200);
+    }
+
+    public function activate(int $id): JsonResponse
+    {
+        $user = $this->getById($id);
+
+        $user->update(['is_active' => true]);
+
+        return response()->json(['message' => 'Usuario activado exitosamente.'], 200);
     }
 
     public function addRoles(int $id, array $roleIds): User|null
