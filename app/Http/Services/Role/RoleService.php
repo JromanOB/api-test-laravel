@@ -2,7 +2,6 @@
 
 namespace App\Http\Services\Role;
 
-use App\Http\Requests\Role\CreateRoleRequest;
 use App\Models\Role;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +18,7 @@ class RoleService
         $role = Role::where('name', '=', $Rolename)->first();
 
         if (! $role) {
-            throw new NotFoundHttpException('Role not found!');
+            throw new NotFoundHttpException('Rol no encontrado!');
         }
 
         return $role;
@@ -30,7 +29,7 @@ class RoleService
         $role = Role::find($id);
 
         if (! $role) {
-            throw new NotFoundHttpException('Role not found!');
+            throw new NotFoundHttpException('Rol no encontrado!');
         }
 
         return $role;
@@ -60,8 +59,15 @@ class RoleService
     {
         $role = $this->getById($id);
 
+        if (! $role) {
+            throw new NotFoundHttpException('Rol no encontrado!');
+        }
+
+        if ($role->users()->count() > 0) {
+            return response()->json(['message' => 'No se puede eliminar el rol porque tiene usuarios asociados!'], 400);
+        }
         $role->delete();
 
-        return response()->json(['message' => 'Role deleted successfully.'], 200);
+        return response()->json(['message' => 'Rol eliminado exitosamente.'], 200);
     }
 }

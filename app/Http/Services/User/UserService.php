@@ -12,7 +12,7 @@ class UserService
 {
     public function getAll(): LengthAwarePaginator
     {
-        $query = User::query()->orderBy('id', 'asc');
+        $query = User::query()->orderBy('id', 'asc')->with('roles');
 
         return $query->paginate(User::PAGINATE);
     }
@@ -78,10 +78,6 @@ class UserService
             }
         }
 
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
-
         $user->fill($data);
         $user->save();
 
@@ -95,5 +91,23 @@ class UserService
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully.'], 200);
+    }
+
+    public function addRoles(int $id, array $roleIds): User|null
+    {
+        $user = $this->getById($id);
+
+        $user->roles()->attach($roleIds);
+
+        return $user->load('roles');
+    }
+
+    public function removeRoles(int $id, array $roleIds): User|null
+    {
+        $user = $this->getById($id);
+
+        $user->roles()->detach($roleIds);
+
+        return $user->load('roles');
     }
 }

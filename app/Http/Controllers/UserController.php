@@ -41,7 +41,9 @@ class UserController extends Controller
      */
     public function update(Request $request, int $id)
     {
-        //
+        $user = $this->userService->update($request->validated(), $id);
+
+        return new UserResource($user);
     }
 
     /**
@@ -49,6 +51,32 @@ class UserController extends Controller
      */
     public function destroy(int $id)
     {
-        //
+        return $this->userService->delete($id);
+    }
+
+    public function addRoles(Request $request, int $id)
+    {
+        $roleIds = $request->input('role_ids', $request->input('roleIds', []));
+
+        if (! is_array($roleIds)) {
+            $roleIds = [$roleIds];
+        }
+
+        $user = $this->userService->addRoles($id, $roleIds);
+
+        return new UserResource($user);
+    }
+
+    public function removeRoles(Request $request, int $id)
+    {
+        $roleIds = $request->input('role_ids', $request->input('roleIds', []));
+
+        if (! is_array($roleIds)) {
+            $roleIds = [$roleIds];
+        }
+
+        $user = $this->userService->removeRoles($id, $roleIds);
+
+        return new UserResource($user);
     }
 }

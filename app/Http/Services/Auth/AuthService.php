@@ -2,7 +2,6 @@
 
 namespace App\Http\Services\Auth;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
@@ -14,7 +13,6 @@ class AuthService
 {
     public function __construct(
         private readonly LdapAuthenticationService $ldapAuthenticationService,
-        private readonly JwtTokenService $jwtTokenService,
         private readonly UserService $userService,
     ) {}
 
@@ -56,8 +54,8 @@ class AuthService
         }
 
         $user = $this->userService->findByUsername($ldapUsername);
-        
-        $token = Auth::guard('api')->login($user);
+
+        $token = JWTAuth::login($user);
 
         return response()->json([
             'access_token' => $token,

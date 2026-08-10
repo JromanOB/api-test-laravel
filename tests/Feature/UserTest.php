@@ -9,6 +9,22 @@ class UserTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_add_roles_route_is_registered_under_users_namespace(): void
+    {
+        $routes = $this->app['router']->getRoutes();
+
+        $routeFound = false;
+
+        foreach ($routes as $route) {
+            if ($route->uri() === 'api/users/add-roles/{id}' && in_array('POST', $route->methods(), true)) {
+                $routeFound = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($routeFound, 'Expected POST /api/users/add-roles/{id} to be registered.');
+    }
+
     public function test_user_can_be_created_without_password_confirmation(): void
     {
         $response = $this->postJson('/api/users', [
