@@ -7,35 +7,38 @@ use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use App\Http\Services\Auth\LdapAuthenticationService;
+use App\Http\Services\User\UserService;
+use Illuminate\Http\JsonResponse;
 
 class AuthService
 {
     public function __construct(
         private readonly LdapAuthenticationService $ldapAuthenticationService,
         private readonly JwtTokenService $jwtTokenService,
+        private readonly UserService $userService,
     ) {}
 
-    public function login(Request $request) {
-        $credentials = $request->only('email', 'password');
+    // public function login(Request $request) {
+    //     $credentials = $request->only('email', 'password');
 
-        if (! $token = Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'Unauthorized',
-                'status' => 'error'
-            ], 401);
-        }
+    //     if (! $token = Auth::attempt($credentials)) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized',
+    //             'status' => 'error'
+    //         ], 401);
+    //     }
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
-        ]);
-    }
+    //     return response()->json([
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'expires_in' => Auth::factory()->getTTL() * 60
+    //     ]);
+    // }
 
-    public function loginWithLdap(
+    public function login(
         string $username,
         string $password
-    ): array {
+    ):JsonResponse  {
         $ldapUser = $this
             ->ldapAuthenticationService
             ->authenticate(
@@ -52,32 +55,19 @@ class AuthService
             );
         }
 
-        $identifier = $ldapUser->getConvertedGuid()
-            ?? $ldapUser->getDn();
+        $user = $this->userService->findByUsername($ldapUsername);
+        
+        $token = Auth::guard('api')->login($user);
 
-        if (! is_string($identifier) || $identifier === '') {
-            throw new \RuntimeException(
-                'No se pudo obtener el identificador del usuario LDAP.'
-            );
-        }
-
-        $token = $this
-            ->jwtTokenService
-            ->createForLdapUser(
-                identifier: $identifier,
-                username: $ldapUsername,
-            );
-
-        return [
+        return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => $this
-                ->jwtTokenService
-                ->expiresInSeconds(),
+            'expires_in' => Auth::factory()->getTTL() * 60,
             'user' => [
-                'username' => $ldapUsername,
+                'id' => $user->id,
             ],
-        ];
+        ]);
+
     }
 
     public function validateToken() {

@@ -2,16 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Services\Auth\AuthService;
+use App\Http\Requests\Auth\LdapLoginRequest;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
     public function __construct(protected AuthService $authService) {}
 
-    public function login(Request $request)
+    public function login(LdapLoginRequest $request): JsonResponse
     {
-        return $this->authService->login($request);
+        $credentials = $request->validated();
+
+        $result = $this->authService->login(
+            username: $credentials['username'],
+            password: $credentials['password'],
+        );
+
+        return $result;
     }
 
     public function validateToken()

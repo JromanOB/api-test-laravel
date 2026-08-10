@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LdapAuthController;
@@ -21,8 +22,12 @@ Route::middleware('auth:api')->group(function () {
 });
 
 
-Route::get('/products/all', [ProductController::class, 'all']);
+Route::get('/products/all', [ProductController::class, 'all'])
+    ->middleware('auth:api');
+
+
 Route::apiResource('products', ProductController::class);
+Route::apiResource('roles', RoleController::class);
 Route::apiResource('users', UserController::class);
 
 Route::apiResource('auth', AuthController::class);

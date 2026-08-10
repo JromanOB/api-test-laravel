@@ -53,11 +53,19 @@ class UserService
 
     public function create(array $data): User
     {
+        $roleId = $data['role_id'];
+
+        unset($data['role_id']);
+
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
 
-        return User::create($data);
+        $user = User::create($data);
+
+        $user->roles()->attach($roleId);
+
+        return $user->load('roles');
     }
 
     public function update(array $data, int $id): User|null

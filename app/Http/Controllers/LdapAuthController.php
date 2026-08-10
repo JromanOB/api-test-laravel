@@ -18,11 +18,11 @@ class LdapAuthController extends Controller
     ): JsonResponse {
         $credentials = $request->validated();
 
-        $result = $this->authService->loginWithLdap(
+        $result = $this->authService->login(
             username: $credentials['username'],
             password: $credentials['password'],
         );
 
-        return response()->json($result);
+        return $result;
     }
 }
