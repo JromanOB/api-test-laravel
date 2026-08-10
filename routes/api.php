@@ -12,23 +12,46 @@ Route::get('/auth/validate', [
     AuthController::class,
     'validateToken'
 ]);
+
 Route::middleware('auth:api')->group(function () {
+    Route::get('/auth/validate', [AuthController::class, 'validateToken']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
+
+    Route::get('/products/all', [ProductController::class, 'all']);
+    Route::apiResource('products', ProductController::class);
+
+    Route::middleware('role:ADMIN')->group(function () {
+
+        Route::apiResource(
+            'roles',
+            RoleController::class
+        );
+
+        Route::apiResource(
+            'users',
+            UserController::class
+        );
+
+        Route::post('/users/add-roles/{id}', [
+            UserController::class,
+            'addRoles'
+        ]);
+
+        Route::post('/users/remove-roles/{id}', [
+            UserController::class,
+            'removeRoles'
+        ]);
+
+        Route::put('/users/desactivate/{id}', [
+            UserController::class,
+            'desactivate'
+        ]);
+
+        Route::put('/users/activate/{id}', [
+            UserController::class,
+            'activate'
+        ]);
+    });
 });
-
-
-Route::get('/products/all', [ProductController::class, 'all'])
-    ->middleware('auth:api');
-Route::apiResource('products', ProductController::class);
-
-Route::apiResource('roles', RoleController::class);
-
-Route::apiResource('users', UserController::class);
-Route::post('/users/add-roles/{id}', [UserController::class, 'addRoles'])
-    ->middleware('auth:api');
-Route::post('/users/remove-roles/{id}', [UserController::class, 'removeRoles'])
-    ->middleware('auth:api');
-Route::put('/users/desactivate/{id}', [UserController::class, 'desactivate']);
-Route::put('/users/activate/{id}', [UserController::class, 'activate']);
