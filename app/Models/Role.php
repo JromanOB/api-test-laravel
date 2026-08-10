@@ -9,7 +9,8 @@ class Role extends Model
 {
     protected $fillable = [
         'name',
-        'description'
+        'description',
+        'is_active'
     ];
 
     public function users(): BelongsToMany

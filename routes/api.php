@@ -8,11 +8,6 @@ use App\Http\Controllers\AuthController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/auth/validate', [
-    AuthController::class,
-    'validateToken'
-]);
-
 Route::middleware('auth:api')->group(function () {
     Route::get('/auth/validate', [AuthController::class, 'validateToken']);
     Route::get('/me', [AuthController::class, 'me']);
@@ -28,6 +23,16 @@ Route::middleware('auth:api')->group(function () {
             'roles',
             RoleController::class
         );
+
+        Route::put('/roles/desactivate/{id}', [
+            RoleController::class,
+            'desactivate'
+        ]);
+
+        Route::put('/roles/activate/{id}', [
+            RoleController::class,
+            'activate'
+        ]);
 
         Route::apiResource(
             'users',

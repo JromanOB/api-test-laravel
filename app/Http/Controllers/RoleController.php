@@ -33,4 +33,14 @@ class RoleController extends Controller {
     {
         return $this->roleService->delete($id);
     }
+
+    public function desactivate(int $id)
+    {
+        return $this->roleService->desactivate($id);
+    }
+
+    public function activate(int $id)
+    {
+        return $this->roleService->activate($id);
+    }
 }

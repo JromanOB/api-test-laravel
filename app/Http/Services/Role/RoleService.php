@@ -70,4 +70,24 @@ class RoleService
 
         return response()->json(['message' => 'Rol eliminado exitosamente.'], 200);
     }
+
+    public function desactivate(int $id): JsonResponse {
+        $role = $this->getById($id);
+
+        if ($role->users()->count() > 0) {
+            return response()->json(['message' => 'No se puede desactivar el rol porque tiene usuarios asociados!'], 400);
+        }
+
+        $role->update(['is_active' => false]);
+
+        return response()->json(['message' => 'Rol desactivado exitosamente.'], 200);
+    }
+
+    public function activate(int $id): JsonResponse {
+        $role = $this->getById($id);
+
+        $role->update(['is_active' => true]);
+
+        return response()->json(['message' => 'Rol activado exitosamente.'], 200);
+    }
 }
