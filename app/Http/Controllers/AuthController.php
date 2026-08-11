@@ -10,35 +10,23 @@ class AuthController extends Controller
 {
     public function __construct(protected AuthService $authService) {}
 
-    public function login(LdapLoginRequest $request): JsonResponse
-    {
-        $credentials = $request->validated();
-
-        $result = $this->authService->login(
-            username: $credentials['username'],
-            password: $credentials['password'],
-        );
-
-        return $result;
+    public function login(LdapLoginRequest $request): JsonResponse {
+        return $this->authService->login($request->validated());;
     }
 
-    public function validateToken()
-    {
+    public function validateToken() {
         return $this->authService->validateToken();
     }
 
-    public function me()
-    {
+    public function me() {
         return $this->authService->me();
     }
 
-    public function logout()
-    {
+    public function logout() {
         return $this->authService->logout();
     }
 
-    public function refresh()
-    {
+    public function refresh() {
         return $this->authService->refresh();
     }
 }
