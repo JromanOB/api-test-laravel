@@ -35,4 +35,23 @@ class LdapAuthenticationService
 
         return $ldapUser;
     }
+
+    public function findByUsername(string $username): ?array
+    {
+        $ldapUser = User::where(
+            'samaccountname',
+            '=',
+            $username
+        )->first();
+
+        if (! $ldapUser) {
+            return null;
+        }
+
+        return [
+            'username' => $ldapUser->getFirstAttribute('samaccountname'),
+            'email' => $ldapUser->getFirstAttribute('mail'),
+            'fullname' => $ldapUser->getFirstAttribute('displayname'),
+        ];
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\Product\CreateProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Services\Product\ProductService;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -23,11 +24,8 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function all()
-    {
-        $products = $this->productService->all();
-
-        return $products;
+    public function all(Request $request) { 
+        return $this->productService->all($request);
     }
     /**
      * Store a newly created resource in storage.

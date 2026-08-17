@@ -8,19 +8,42 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class UserService
 {
-    public function getAll(): LengthAwarePaginator
-    {
-        $query = User::query()->orderBy('id', 'asc')->with('roles');
+    public function getAll(Request $request) {
+        $limit = $request->integer('limit', 10);
+        $offset = $request->integer('offset', 0);
+        $search = $request->query('search');
 
-        return $query->paginate(User::PAGINATE);
+        $query = User::query()
+            ->with('roles')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('username', 'like', "%{$search}%")
+                        ->orWhere('fullname', 'like', "%{$search}%");
+                });
+            });
+
+        $total = $query->count();
+
+        $users = $query
+            ->skip($offset)
+            ->take($limit)
+            ->get();
+
+        return response()->json([
+            'total' => $total,
+            'rows' => $users,
+        ]);
     }
 
     public function findByUsername(string $username): User
     {
-        $user = User::where('username', '=', $username)->first();
+        $user = User::with('roles')
+            ->where('username', $username)
+            ->first();
 
         if (! $user) {
             throw new NotFoundHttpException('Usuario no encontrado!');
@@ -37,7 +60,8 @@ class UserService
 
     public function getById(int $id): User|null
     {
-        $user = User::find($id);
+        $user = User::with('roles')
+            ->find($id);
 
         if (! $user) {
             throw new NotFoundHttpException('Usuario no encontrado!');
@@ -60,17 +84,13 @@ class UserService
 
     public function create(array $data): User
     {
-        $roleId = $data['role_id'];
+        $roleIds = $data['role_ids'];
 
-        unset($data['role_id']);
-
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
+        unset($data['role_ids']);
 
         $user = User::create($data);
 
-        $user->roles()->attach($roleId);
+        $user->roles()->sync($roleIds);
 
         return $user->load('roles');
     }
@@ -79,6 +99,16 @@ class UserService
     {
         $user = $this->getById($id);
 
+        // Verifica si se enviaron roles
+        $hasRoles = array_key_exists('role_ids', $data);
+
+        // Obtiene los IDs de los roles
+        $roleIds = $data['role_ids'] ?? [];
+
+        // role_ids no es una columna de users
+        unset($data['role_ids']);
+
+        // Elimina únicamente campos null
         foreach ($data as $key => $value) {
             if ($value === null) {
                 unset($data[$key]);
@@ -88,7 +118,12 @@ class UserService
         $user->fill($data);
         $user->save();
 
-        return $user;
+        // Actualiza la relación muchos a muchos
+        if ($hasRoles) {
+            $user->roles()->sync($roleIds);
+        }
+
+        return $user->load('roles');
     }
 
     public function delete(int $id): JsonResponse

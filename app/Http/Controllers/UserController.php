@@ -3,19 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
+use App\Http\Services\Auth\LdapAuthenticationService;
 use App\Http\Services\User\UserService;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function __construct(protected UserService $userService) {}
+    public function __construct(
+        protected UserService $userService,
+        private readonly LdapAuthenticationService $ldapAuthenticationService,
+    ) {}
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->userService->getAll();
+        return $this->userService->getAll($request);
     }
 
     /**
@@ -39,7 +45,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, int $id)
+    public function update(UpdateUserRequest $request, int $id)
     {
         $user = $this->userService->update($request->validated(), $id);
 
@@ -88,5 +94,28 @@ class UserController extends Controller
         $user = $this->userService->removeRoles($id, $roleIds);
 
         return new UserResource($user);
+    }
+
+    public function findLdapUser(
+        Request $request
+    ): JsonResponse {
+        $data = $request->validate([
+            'username' => [
+                'required',
+                'string',
+            ],
+        ]);
+
+        $user = $this
+            ->ldapAuthenticationService
+            ->findByUsername($data['username']);
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Usuario no encontrado en LDAP.',
+            ], 404);
+        }
+
+        return response()->json($user);
     }
 }

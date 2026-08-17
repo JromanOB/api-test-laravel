@@ -14,6 +14,7 @@ class User extends Authenticatable implements JWTSubject
         'phonenumber',
         'fullname',
         'is_active',
+        'role_ids'
     ];
 
     public function roles(): BelongsToMany

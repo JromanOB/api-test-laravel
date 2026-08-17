@@ -28,17 +28,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 $request->is('api/*')
         );
 
-        $exceptions->render(function (
-            AuthenticationException $e,
-            Request $request
-        ) {
-            if ($request->is('api/*')) {
-                return response()->json([
-                    'message' =>
-                        'Token inválido, expirado o no proporcionado.'
-                ], 401);
-            }
-        });
+        // $exceptions->render(function (
+        //     AuthenticationException $e,
+        //     Request $request
+        // ) {
+        //     if ($request->is('api/*')) {
+        //         return response()->json([
+        //             'message' =>
+        //                 'Token inválido, expirado o no proporcionado.'
+        //         ], 401);
+        //     }
+        // });
 
     })
     ->create();

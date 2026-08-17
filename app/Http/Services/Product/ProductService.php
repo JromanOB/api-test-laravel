@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 class ProductService
 {
@@ -18,11 +18,31 @@ class ProductService
         return $query->paginate(Product::PAGINATE);
     }
 
-    public function all(): Collection
+    public function all(Request $request)
     {
-        return Product::query()
-            ->orderBy('id', 'asc')
+        $limit = $request->integer('limit', 10);
+        $offset = $request->integer('offset', 0);
+        $search = $request->query('search');
+
+        $query = Product::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            });
+
+        $total = $query->count();
+
+        $products = $query
+            ->skip($offset)
+            ->take($limit)
             ->get();
+
+        return response()->json([
+            'total' => $total,
+            'rows' => $products,
+        ]);
     }
 
     public function getById(int $id): Product|null
